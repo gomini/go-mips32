@@ -10,6 +10,7 @@ import (
 	"debug/elf"
 	"fmt"
 	"os"
+	"encoding/binary"
 )
 
 type elfFile struct {
@@ -99,6 +100,11 @@ func (f *elfFile) goarch() string {
 		return "arm"
 	case elf.EM_PPC64:
 		return "power64"
+	case elf.EM_MIPS:
+		if f.elf.ByteOrder == binary.LittleEndian {
+			return "mips32le"
+		}
+		return "mips32"
 	}
 	return ""
 }

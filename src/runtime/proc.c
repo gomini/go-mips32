@@ -130,7 +130,6 @@ runtime·schedinit(void)
 		g->racectx = runtime·raceinit();
 
 	runtime·sched.maxmcount = 10000;
-
 	runtime·tracebackinit();
 	runtime·symtabinit();
 	runtime·stackinit();
@@ -194,6 +193,15 @@ mcommoninit(M *mp)
 		runtime·callers(1, mp->createstack, nelem(mp->createstack));
 
 	mp->fastrand = 0x49f6428aUL + mp->id + runtime·cputicks();
+
+#ifdef GOARCH_mips32le
+	// init fregs for mips32
+	runtime·minitfregs(mp);
+#endif
+#ifdef GOARCH_mips32
+	// init fregs for mips32
+	runtime·minitfregs(mp);
+#endif
 
 	runtime·lock(&runtime·sched.lock);
 	mp->id = runtime·sched.mcount++;
@@ -854,7 +862,7 @@ mstart(void)
 	// prepare the thread to be able to handle the signals.
 	if(g->m == &runtime·m0)
 		runtime·initsig();
-	
+
 	if(g->m->mstartfn)
 		g->m->mstartfn();
 
@@ -2154,7 +2162,7 @@ runtime·newproc(int32 siz, FuncVal* fn, ...)
 	byte *argp;
 	void (*mfn)(void);
 
-	if(thechar == '5')
+	if(thechar == '5' || thechar == 'v')
 		argp = (byte*)(&fn+2);  // skip caller's saved LR
 	else
 		argp = (byte*)(&fn+1);
@@ -2214,7 +2222,7 @@ runtime·newproc1(FuncVal *fn, byte *argp, int32 narg, int32 nret, void *callerp
 	sp -= 4*sizeof(uintreg); // extra space in case of reads slightly beyond frame
 	sp -= siz;
 	runtime·memmove(sp, argp, narg);
-	if(thechar == '5') {
+	if(thechar == '5' || thechar == 'v') {
 		// caller's LR
 		sp -= sizeof(void*);
 		*(void**)sp = nil;
@@ -2223,6 +2231,8 @@ runtime·newproc1(FuncVal *fn, byte *argp, int32 narg, int32 nret, void *callerp
 	runtime·memclr((byte*)&newg->sched, sizeof newg->sched);
 	newg->sched.sp = (uintptr)sp;
 	newg->sched.pc = (uintptr)runtime·goexit + PCQuantum; // +PCQuantum so that previous instruction is in same function
+//	if(thechar == 'v')
+//		newg->sched.pc += PCQuantum;
 	newg->sched.g = newg;
 	runtime·gostartcallfn(&newg->sched, fn);
 	newg->gopc = (uintptr)callerpc;

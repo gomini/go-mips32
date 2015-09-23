@@ -109,5 +109,9 @@ func TestDisasmExtld(t *testing.T) {
 	case "plan9", "windows":
 		t.Skipf("skipping on %s", runtime.GOOS)
 	}
+	switch runtime.GOARCH {
+	case "mips32", "mips32le":
+		t.Skipf("skipping on %s", runtime.GOARCH)
+	}
 	testDisasm(t, "-ldflags=-linkmode=external")
 }

@@ -1033,7 +1033,7 @@ static LSym *newstack;
 
 enum
 {
-	HasLinkRegister = (thechar == '5'),
+	HasLinkRegister = (thechar == '5' || thechar == 'v'),
 };
 
 // TODO: Record enough information in new object files to
@@ -1042,7 +1042,7 @@ enum
 static int
 callsize(void)
 {
-	if(thechar == '5')
+	if(HasLinkRegister)
 		return 0;
 	return RegSize;
 }
@@ -1076,18 +1076,18 @@ dostkcheck(void)
 			continue;
 
 		if(s->nosplit) {
-		ctxt->cursym = s;
-		ch.sym = s;
-		stkcheck(&ch, 0);
-	}
+			ctxt->cursym = s;
+			ch.sym = s;
+			stkcheck(&ch, 0);
+		}
 	}
 	for(s = ctxt->textp; s != nil; s = s->next) {
 		if(!s->nosplit) {
-		ctxt->cursym = s;
-		ch.sym = s;
-		stkcheck(&ch, 0);
+			ctxt->cursym = s;
+			ch.sym = s;
+			stkcheck(&ch, 0);
+		}
 	}
-}
 }
 
 static int
@@ -1101,12 +1101,12 @@ stkcheck(Chain *up, int depth)
 	
 	limit = up->limit;
 	s = up->sym;
-	
+
 	// Don't duplicate work: only need to consider each
 	// function at top of safe zone once.
 	if(limit == StackLimit-callsize()) {
 		if(s->stkcheck)
-		return 0;
+			return 0;
 		s->stkcheck = 1;
 	}
 	
@@ -1136,7 +1136,7 @@ stkcheck(Chain *up, int depth)
 		return 0;
 
 	ch.up = up;
-	
+
 	// Walk through sp adjustments in function, consuming relocs.
 	r = s->r;
 	endr = r + s->nr;
@@ -1154,6 +1154,21 @@ stkcheck(Chain *up, int depth)
 			switch(r->type) {
 			case R_CALL:
 			case R_CALLARM:
+			case R_CALLMIPS:
+				// for mips32, R_CALLMIPS could be just a jump-around
+				// inside a function.
+				if(r->type == R_CALLMIPS && s == r->sym) {
+					// TODO BUG: liblink does not emit prolog that contains
+					// a JMP to the start of a func, instead, it loads
+					// the address of the func in R4 and runtime·morestack
+					// uses it as the return address.
+					// .S written by the user could write such a JMP if
+					// the func is marked as having "-4" frame size and
+					// the condition to test if we should follow it will fail.
+					if(r->off != 0)
+						break;
+				}
+
 				// Direct call.
 				ch.limit = limit - pcsp.value - callsize();
 				ch.sym = r->sym;
@@ -1162,10 +1177,21 @@ stkcheck(Chain *up, int depth)
 
 				// If this is a call to morestack, we've just raised our limit back
 				// to StackLimit beyond the frame size.
+				// -----------------
+				// 	locals
+				// -----------------
+				// 	LR		morestack always gives this space
+				// -----------------
+				// 	StackLimit
+				// -----------------
 				if(strncmp(r->sym->name, "runtime.morestack", 17) == 0) {
 					limit = StackLimit + s->locals;
-					if(thechar == '5')
-						limit += 4; // saved LR
+					// risc cpus do not use stack executing CALL
+					// StackLimit + s->locals has the same effect
+					// as the above "limit - pcsp.value - 4"
+					// add 4 back for risc cpus.
+					if(HasLinkRegister)
+						limit += RegSize; // saved LR
 				}
 				break;
 
@@ -1184,7 +1210,7 @@ stkcheck(Chain *up, int depth)
 				break;
 			}
 		}
-		}
+	}
 		
 	return 0;
 }
@@ -1208,17 +1234,25 @@ stkprint(Chain *ch, int limit)
 
 	if(ch->up == nil) {
 		// top of chain.  ch->sym != nil.
-		if(ch->sym->nosplit)
+		if(ch->sym->nosplit) {
+			// "avail-space"	assumed on entry to "this"
 			print("\t%d\tassumed on entry to %s\n", ch->limit, name);
-		else
+		} else {
+			// "avail-space"	guaranteed after "this"
 			print("\t%d\tguaranteed after split check in %s\n", ch->limit, name);
+		}
 	} else {
+		// depth first
 		stkprint(ch->up, ch->limit + (!HasLinkRegister)*PtrSize);
-		if(!HasLinkRegister)
+		if(!HasLinkRegister) {
+			// only 6l/8l
 			print("\t%d\ton entry to %s\n", ch->limit, name);
+		}
 	}
-	if(ch->limit != limit)
+	if(ch->limit != limit) {
+		// "avail-space"	after "this" uses "locals"
 		print("\t%d\tafter %s uses %d\n", limit, name, ch->limit - limit);
+	}
 }
 
 int
@@ -1533,7 +1567,7 @@ callgraph(void)
 			r = &s->r[i];
 			if(r->sym == nil)
 				continue;
-			if((r->type == R_CALL || r->type == R_CALLARM) && r->sym->type == STEXT)
+			if((r->type == R_CALL || r->type == R_CALLARM || r->type == R_CALLMIPS) && r->sym->type == STEXT)
 				Bprint(&bso, "%s calls %s\n", s->name, r->sym->name);
 		}
 	}

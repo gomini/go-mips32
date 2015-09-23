@@ -107,6 +107,7 @@ case "$#" in
 	exit 2
 esac
 
+GOOSARCH_in=syscall_$GOOSARCH.go
 case "$GOOSARCH" in
 _* | *_ | _)
 	echo 'undefined $GOOS_$GOARCH:' "$GOOSARCH" 1>&2
@@ -175,6 +176,14 @@ linux_arm)
 	mksyscall="./mksyscall.pl -l32 -arm"
 	mksysnum="curl -s 'http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/plain/arch/arm/include/uapi/asm/unistd.h' | ./mksysnum_linux.pl"
 	mktypes="GOARCH=$GOARCH go tool cgo -godefs"
+	;;
+linux_mips32)
+	echo "use mips32x-all.sh instead"
+	exit 1
+	;;
+linux_mips32le)
+	echo "use mips32x-all.sh instead"
+	exit 1
 	;;
 nacl_386)
 	mkerrors=""
@@ -254,7 +263,7 @@ esac
 			syscall_goos="syscall_bsd.go $syscall_goos"
 			;;
 		esac
-		if [ -n "$mksyscall" ]; then echo "$mksyscall $syscall_goos syscall_$GOOSARCH.go |gofmt >zsyscall_$GOOSARCH.go"; fi
+		if [ -n "$mksyscall" ]; then echo "$mksyscall $syscall_goos $GOOSARCH_in |gofmt >zsyscall_$GOOSARCH.go"; fi
 		;;
 	esac
 	if [ -n "$mksysctl" ]; then echo "$mksysctl |gofmt >$zsysctl"; fi

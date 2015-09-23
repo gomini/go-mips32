@@ -880,7 +880,8 @@ void
 runtime·morestackc(void)
 {
 	void (*fn)(void);
-	
+
+	*(int32*)0 = 0;	
 	fn = badc;
 	runtime·onM(&fn);
 }

@@ -34,6 +34,7 @@
 #include <libc.h>
 #include <bio.h>
 #include <link.h>
+#include "../cmd/vl/v.out.h"
 
 Prog*
 brchain(Link *ctxt, Prog *p)
@@ -104,7 +105,7 @@ linkpatch(Link *ctxt, LSym *sym)
 	}
 	
 	for(p = sym->text; p != nil; p = p->link) {
-		p->mark = 0;	/* initialization for follow */
+		p->mark &= NOSCHED;	/* initialization for follow */
 		if(p->pcond != nil) {
 			p->pcond = brloop(ctxt, p->pcond);
 			if(p->pcond != nil)

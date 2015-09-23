@@ -471,7 +471,7 @@ allocauto(Prog* ptxt)
 		stksize = rnd(stksize, n->type->align);
 		if(haspointers(n->type))
 			stkptrsize = stksize;
-		if(thechar == '5')
+		if(thechar == '5' || thechar == 'v')
 			stksize = rnd(stksize, widthptr);
 		if(stksize >= (1ULL<<31)) {
 			setlineno(curfn);
@@ -528,12 +528,16 @@ cgen_checknil(Node *n)
 		dump("checknil", n);
 		fatal("bad checknil");
 	}
-	if((thechar == '5' && n->op != OREGISTER) || !n->addable || n->op == OLITERAL) {
-		regalloc(&reg, types[tptr], n);
-		cgen(n, &reg);
-		gins(ACHECKNIL, &reg, N);
-		regfree(&reg);
-		return;
-	}
+	if(thechar == '5' || thechar == 'v')
+	if(n->op != OREGISTER)
+		goto regpls;
+	if(!n->addable || n->op == OLITERAL)
+		goto regpls;
 	gins(ACHECKNIL, n, N);
+	return;
+regpls:
+	regalloc(&reg, types[tptr], n);
+	cgen(n, &reg);
+	gins(ACHECKNIL, &reg, N);
+	regfree(&reg);
 }

@@ -30,6 +30,8 @@ import "unsafe"
 
 const usesLR = GOARCH != "amd64" && GOARCH != "amd64p32" && GOARCH != "386"
 
+const delaySlot = GOARCH == "mips32" || GOARCH == "mips32le"
+
 var (
 	// initialized in tracebackinit
 	deferprocPC uintptr
@@ -321,6 +323,9 @@ func gentraceback(pc0 uintptr, sp0 uintptr, lr0 uintptr, gp *g, skip int, pcbuf 
 				tracepc := frame.pc // back up to CALL instruction for funcline.
 				if (n > 0 || flags&_TraceTrap == 0) && frame.pc > f.entry && !waspanic {
 					tracepc--
+					if delaySlot {
+						tracepc--
+					}
 				}
 				print(gofuncname(f), "(")
 				argp := (*[100]uintptr)(unsafe.Pointer(frame.argp))
@@ -479,6 +484,9 @@ func printcreatedby(gp *g) {
 		tracepc := pc // back up to CALL instruction for funcline.
 		if pc > f.entry {
 			tracepc -= _PCQuantum
+			if delaySlot {
+				tracepc -= _PCQuantum
+			}
 		}
 		var file string
 		line := funcline(f, tracepc, &file)

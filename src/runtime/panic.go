@@ -61,7 +61,7 @@ func deferproc(siz int32, fn *funcval) { // arguments of fn follow fn
 	// we can only call nosplit routines.
 	argp := uintptr(unsafe.Pointer(&fn))
 	argp += unsafe.Sizeof(fn)
-	if GOARCH == "arm" {
+	if GOARCH == "arm" || GOARCH == "mips32" || GOARCH == "mips32le" {
 		argp += ptrSize // skip caller's saved link register
 	}
 	mp := acquirem()

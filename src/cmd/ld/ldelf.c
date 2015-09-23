@@ -436,6 +436,9 @@ ldelf(Biobuf *f, char *pkg, int64 len, char *pn)
 			return;
 		}
 		break;
+	case 'v':
+		// XXX do something
+		break;
 	}
 
 	// load section list into memory.

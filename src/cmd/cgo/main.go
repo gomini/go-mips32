@@ -133,12 +133,16 @@ var ptrSizeMap = map[string]int64{
 	"386":   4,
 	"amd64": 8,
 	"arm":   4,
+	"mips32":4,
+	"mips32le":4,
 }
 
 var intSizeMap = map[string]int64{
 	"386":   4,
 	"amd64": 8,
 	"arm":   4,
+	"mips32":4,
+	"mips32le":4,
 }
 
 var cPrefix string

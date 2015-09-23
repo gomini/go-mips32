@@ -12,6 +12,7 @@ import (
 	"go/token"
 	"os"
 	"strings"
+	"strconv"
 )
 
 // godefs returns the output for -godefs mode.
@@ -220,7 +221,11 @@ func (p *Package) cdefs(f *File, srcfile string) string {
 						nerrors++
 						continue
 					}
-					printf("\t%s;", cdecl(f[0], f[1]))
+					if x := cdecl(f[0], f[1]); x == "" {
+						continue
+					} else {
+						printf("\t%s;", x)
+					}
 				}
 				printf("\n")
 			}
@@ -263,7 +268,12 @@ func cdecl(name, typ string) string {
 	}
 	// X [4]byte -> X[4] byte
 	for strings.HasPrefix(typ, "[") {
-		i := strings.Index(typ, "]") + 1
+		// remove [0]byte as cc cannot handle it
+		i := strings.Index(typ, "]")
+		if x, e := strconv.Atoi(typ[1:i]); e == nil && x == 0 {
+			return ""
+		}
+		i++
 		name = name + typ[:i]
 		typ = typ[i:]
 	}

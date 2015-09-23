@@ -37,7 +37,11 @@ package syscall
 #include <sys/signal.h>
 #include <sys/stat.h>
 #include <sys/statfs.h>
+#ifndef __MIPSEB
+#ifndef __MIPSEL
 #include <sys/sysinfo.h>
+#endif
+#endif
 #include <sys/time.h>
 #include <sys/times.h>
 #include <sys/timex.h>
@@ -53,7 +57,25 @@ package syscall
 #include <termios.h>
 #include <time.h>
 #include <unistd.h>
+
+#ifdef __MIPSEB
+#define MIPS
+#endif
+#ifdef __MIPSEL
+#define MIPS
+#endif
+
+#ifdef MIPS
+struct ustat {
+	__daddr_t	f_tfree;
+	__ino_t		f_tinode;
+	char		f_fname[6];
+	char		f_fpack[6];
+};
+#else
 #include <ustat.h>
+#endif
+
 #include <utime.h>
 
 enum {
@@ -75,6 +97,7 @@ struct sockaddr_any {
 };
 
 // copied from /usr/include/linux/un.h
+// sa_family_t is "unsigned short" for mips
 struct my_sockaddr_un {
 	sa_family_t sun_family;
 #ifdef __ARM_EABI__
@@ -85,11 +108,29 @@ struct my_sockaddr_un {
 #endif
 };
 
-#ifdef __ARM_EABI__
-typedef struct user_regs PtraceRegs;
+#ifdef MIPS
+
+// copied from uClibc/libc/sysdeps/linux/mips/sys/user.h
+#define EF_SIZE	180
+
+typedef struct user_regs {
+	unsigned long	uregs[EF_SIZE/4+64];
+}
+PtraceRegs;
+
 #else
+
+#ifdef __ARM_EABI__
+
+typedef struct user_regs PtraceRegs;
+
+#else
+
 typedef struct user_regs_struct PtraceRegs;
+
 #endif
+
+#endif	// MIPS
 
 // The real epoll_event is a union, and godefs doesn't handle it well.
 struct my_epoll_event {

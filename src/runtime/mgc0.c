@@ -1807,7 +1807,8 @@ runtime·unrollgcprog_m(void)
 		}
 		// atomic way to say mask[0] = 1
 		x = ((uint32*)mask)[0];
-		runtime·atomicstore((uint32*)mask, x|1);
+		((byte*)&x)[0] = 1;
+		runtime·atomicstore((uint32*)mask, x);
 	}
 	runtime·unlock(&lock);
 }

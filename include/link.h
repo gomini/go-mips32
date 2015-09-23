@@ -109,6 +109,7 @@ struct	Prog
 	uchar	tt;	// 6l, 8l
 	uint16	optab;	// 5l
 	uchar	isize;	// 6l, 8l
+	uchar	isret;	// vl
 
 	char	width;	/* fake for DATA */
 	char	mode;	/* 16, 32, or 64 in 6l, 8l; internal use in 5g, 6g, 8g */
@@ -233,10 +234,12 @@ enum
 enum
 {
 	R_ADDR = 1,
+	R_ADDRMIPS,
 	R_SIZE,
 	R_CALL, // relocation for direct PC-relative call
 	R_CALLARM, // relocation for ARM direct call
 	R_CALLIND, // marker for indirect call (no actual relocating necessary)
+	R_CALLMIPS,
 	R_CONST,
 	R_PCREL,
 	R_TLS,
@@ -529,6 +532,20 @@ void	span6(Link *ctxt, LSym *s);
 // asm8.c
 void	span8(Link *ctxt, LSym *s);
 
+// asmv.c
+void	prepareoprange(Link*);
+void	spanv(Link*, LSym*);
+int	aclassv(Link*, Addr*);
+int	compoundv(Link*, Prog*);
+int32	regoffv(Link*, Addr*);
+int	isnopv(Prog*);
+
+// objv.c
+void	addnopv(Prog*);
+
+// schedv.c
+void	schedv(Link*, Prog*, Prog*);
+
 // data.c
 vlong	addaddr(Link *ctxt, LSym *s, LSym *t);
 vlong	addaddrplus(Link *ctxt, LSym *s, LSym *t, vlong add);
@@ -576,10 +593,11 @@ Prog*	copyp(Link*, Prog*);
 Prog*	appendp(Link*, Prog*);
 vlong	atolwhex(char*);
 
-// list[568].c
+// list[568v].c
 void	listinit5(void);
 void	listinit6(void);
 void	listinit8(void);
+void	listinitv(void);
 
 // obj.c
 int	linklinefmt(Link *ctxt, Fmt *fp);
@@ -611,13 +629,17 @@ char*	headstr(int);
 extern	char*	anames5[];
 extern	char*	anames6[];
 extern	char*	anames8[];
+extern	char*	anamesv[];
 
 extern	char*	cnames5[];
+extern	char*	cnamesv[];
 
 extern	LinkArch	link386;
 extern	LinkArch	linkamd64;
 extern	LinkArch	linkamd64p32;
 extern	LinkArch	linkarm;
+extern	LinkArch	linkmips32;
+extern	LinkArch	linkmips32le;
 
 #pragma	varargck	type	"A"	int
 #pragma	varargck	type	"D"	Addr*
