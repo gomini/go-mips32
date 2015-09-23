@@ -208,7 +208,7 @@ pctospadj(Link *ctxt, LSym *sym, int32 oldval, Prog *p, int32 phase, void *arg)
 		return oldval;
 	if(oldval + p->spadj < -10000 || oldval + p->spadj > 1100000000) {
 		ctxt->diag("overflow in spadj: %d + %d = %d", oldval, p->spadj, oldval + p->spadj);
-		sysfatal("bad code");
+		sysfatal("pctospadj: bad code");
 	}
 	return oldval + p->spadj;
 }
@@ -227,7 +227,7 @@ pctopcdata(Link *ctxt, LSym *sym, int32 oldval, Prog *p, int32 phase, void *arg)
 		return oldval;
 	if((int32)p->to.offset != p->to.offset) {
 		ctxt->diag("overflow in PCDATA instruction: %P", p);
-		sysfatal("bad code");
+		sysfatal("pctopcdata: bad code");
 	}
 	return p->to.offset;
 }

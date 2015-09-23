@@ -1,0 +1,272 @@
+
+
+enum
+{
+	NSNAME	= 8,
+	NSYM	= 50,
+	NREG	= 32,
+	NFREG	= 32,
+};
+#include "../ld/textflag.h"
+
+enum
+{
+	REGZERO		= 0,
+	REGSP		= 29,
+	REGLINK		= 31,
+	REGRET		= 1,
+	REGARG		= -1,
+	REGRT1		= 1,
+	REGRT2		= 2,
+	REGMIN		= 3,
+	REGENV		= 7,
+	REGMAX		= 24,
+	REGEXT		= 30,
+	REGG		= REGEXT-0,
+	REGTMP		= 25,
+
+	FREGRET		= 0,
+	FREGMIN		= 4,
+	FREGMAX		= 22,
+	FREGEXT		= 22,
+	FREGZERO	= 24,
+	FREGHALF	= 26,
+	FREGONE		= 28,
+	FREGTWO		= 30,
+};
+
+enum {
+	BIG		= 32766,
+	NSCHED		= 20,
+};
+
+enum {
+	FOLL		= 1<<0,
+	LABEL		= 1<<1,
+	LEAF		= 1<<2,
+	SYNC		= 1<<3,
+	BRANCH		= 1<<4,
+	LOAD		= 1<<5,
+	FCMP		= 1<<6,
+	NOSCHED		= 1<<7,
+};
+
+enum {
+	C_NONE,
+	C_REG,
+	C_FREG,
+	C_FCREG,
+	C_MREG,
+	C_HI,
+	C_LO,
+	C_ZCON,
+	C_SCON,
+	C_ADD0CON,
+	C_AND0CON,
+	C_ADDCON,
+	C_ANDCON,
+	C_UCON,
+	C_LCON,
+	C_SACON,
+	C_SECON,
+	C_LACON,
+	C_LECON,
+	C_SBRA,
+	C_LBRA,
+	C_SAUTO,
+	C_SEXT,
+	C_LAUTO,
+	C_LEXT,
+	C_ZOREG,
+	C_SOREG,
+	C_LOREG,
+	C_GOK,
+
+	C_NCLASS,
+};
+
+enum	as
+{
+	AXXX,
+
+	AABSD,
+	AABSF,
+	AADD,
+	AADDD,
+	AADDF,
+	AADDU,
+	AAND,
+	ABEQ,
+	ABFPF,
+	ABFPT,
+	ABGEZ,
+	ABGEZAL,
+	ABGTZ,
+	ABLEZ,
+	ABLTZ,
+	ABLTZAL,
+	ABNE,
+	
+	ABREAK,
+
+	ACMPEQD,
+	ACMPEQF,
+	ACMPGED,
+	ACMPGEF,
+	ACMPGTD,
+	ACMPGTF,
+	ADIV,
+	ADIVD,
+	ADIVF,
+	ADIVU,
+
+	AJAL,
+	AJMP,
+
+	AMOVB,
+	AMOVBU,
+
+	AMOVD,
+	AMOVDF,
+	AMOVDW,
+	AMOVF,
+	AMOVFD,
+	AMOVFW,
+
+	AMOVH,
+	AMOVHU,
+	
+	AMOVW,
+	
+	AMOVWD,
+	AMOVWF,
+	
+	AMOVWL,
+	AMOVWR,
+	
+	AMUL,
+	AMULD,
+	AMULF,
+	AMULU,
+	
+	ANEGD,
+	ANEGF,
+	
+	ANOR,
+	AOR,
+	
+	AREM,
+	AREMU,
+	
+	ARET,
+
+	ASGT,
+	ASGTU,
+
+	ASLL,
+	ASRA,
+	ASRL,
+	ASUB,
+
+	ASUBD,
+	ASUBF,
+	ASUBU,
+
+	ASYSCALL,
+	ATLBP,
+	ATLBR,
+	ATLBWI,
+	ATLBWR,
+
+	AXOR,
+
+	
+
+
+
+
+	
+	
+
+
+	AERET,
+	APREF,
+	ALL,
+	ASC,
+
+	AMAD,
+	AMADU,
+	AMUL32,
+	AMSUB,
+	AMSUBU,
+
+	AROTR,
+	AMOVZ,
+	AMOVN,
+
+	ACLZ,
+	ACLO,
+
+	ASEB,
+	ASEH,
+	AWSBH,
+
+
+
+	ADATA,
+	AGLOBL,
+	AGOK,
+	AHISTORY,
+	ANAME,
+	ANOP,
+	ATEXT,
+	AWORD,
+	AEND,
+	ADYNT_,
+	AINIT_,
+	ASIGNAME,
+
+	AUNDEF,
+	AUSEFIELD,
+	ATYPE,
+	AFUNCDATA,
+	APCDATA,
+	ACHECKNIL,
+	AVARDEF,
+	AVARKILL,
+	ADUFFCOPY,
+	ADUFFZERO,
+
+	ALAST,
+};
+
+enum
+{
+	D_GOK		= 0,
+	D_NONE		= 1,
+
+	D_BRANCH	= (D_NONE+1),
+	D_OREG		= (D_NONE+2),
+	D_CONST		= (D_NONE+7),
+	D_FCONST	= (D_NONE+8),
+	D_SCONST	= (D_NONE+9),
+	D_REG		= (D_NONE+12),
+	D_FREG		= (D_NONE+13),
+	D_FCREG		= (D_NONE+14),
+	D_MREG		= (D_NONE+15),
+	D_FILE		= (D_NONE+16),
+	D_OCONST	= (D_NONE+17),
+	D_FILE1		= (D_NONE+18),
+	D_HI		= (D_NONE+10),
+	D_LO		= (D_NONE+11),
+	D_VCONST	= (D_NONE+19),
+	D_ADDR		= (D_NONE + 22),
+	D_CONST2	= (D_NONE+23),
+
+	D_EXTERN	= (D_NONE+3),
+	D_STATIC	= (D_NONE+4),
+	D_AUTO		= (D_NONE+5),
+	D_PARAM		= (D_NONE+6),
+};
+
+#define	SYMDEF	"__.GOSYMDEF"

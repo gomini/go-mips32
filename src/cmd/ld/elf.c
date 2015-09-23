@@ -1148,6 +1148,10 @@ asmbelf(vlong symo)
 	case '8':
 		eh->machine = EM_386;
 		break;
+	case 'v':
+		eh->machine = EM_MIPS;
+		eh->flags = 0x70001001;	// noreorder, o32, mips32r2
+		break;
 	}
 
 	startva = INITTEXT - HEADR;
@@ -1488,7 +1492,10 @@ elfobj:
 		eh->ident[EI_CLASS] = ELFCLASS64;
 	else
 		eh->ident[EI_CLASS] = ELFCLASS32;
-	eh->ident[EI_DATA] = ELFDATA2LSB;
+	if(ctxt->arch->endian == BigEndian)
+		eh->ident[EI_DATA] = ELFDATA2MSB;
+	else
+		eh->ident[EI_DATA] = ELFDATA2LSB;
 	eh->ident[EI_VERSION] = EV_CURRENT;
 
 	if(linkmode == LinkExternal)

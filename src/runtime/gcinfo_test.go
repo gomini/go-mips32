@@ -129,7 +129,7 @@ type BigStruct struct {
 
 func infoBigStruct() []byte {
 	switch runtime.GOARCH {
-	case "386", "arm":
+	case "386", "arm", "mips32", "mips32le":
 		return []byte{
 			BitsPointer,                                                // q *int
 			BitsScalar, BitsScalar, BitsScalar, BitsScalar, BitsScalar, // w byte; e [17]byte

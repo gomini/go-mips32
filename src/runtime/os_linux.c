@@ -50,6 +50,7 @@ runtime·futexsleep(uint32 *addr, uint32 val, int64 ns)
 		return;
 	}
 	// NOTE: tv_nsec is int64 on amd64, so this assumes a little-endian system.
+	// it's okay for the big endian mips32, tv_nsec is uint32
 	ts.tv_nsec = 0;
 	ts.tv_sec = runtime·timediv(ns, 1000000000LL, (int32*)&ts.tv_nsec);
 	runtime·futex(addr, FUTEX_WAIT, val, &ts, nil, 0);
@@ -269,6 +270,13 @@ runtime·memlimit(void)
 #define sa_handler k_sa_handler
 #endif
 
+#ifdef GOARCH_mips32
+#define MIPS32x
+#endif
+#ifdef GOARCH_mips32le
+#define MIPS32x
+#endif
+
 /*
  * This assembler routine takes the args from registers, puts them on the stack,
  * and calls sighandler().
@@ -280,12 +288,18 @@ void
 runtime·setsig(int32 i, GoSighandler *fn, bool restart)
 {
 	SigactionT sa;
+	int32 eno;
 
 	runtime·memclr((byte*)&sa, sizeof sa);
 	sa.sa_flags = SA_ONSTACK | SA_SIGINFO | SA_RESTORER;
 	if(restart)
 		sa.sa_flags |= SA_RESTART;
+#ifdef MIPS32x
+	sa.sa_mask.sig[0] = sa.sa_mask.sig[1] = ~0U;
+#else
 	sa.sa_mask = ~0ULL;
+#endif
+
 	// Although Linux manpage says "sa_restorer element is obsolete and
 	// should not be used". x86_64 kernel requires it. Only use it on
 	// x86.
@@ -298,18 +312,23 @@ runtime·setsig(int32 i, GoSighandler *fn, bool restart)
 	if(fn == runtime·sighandler)
 		fn = (void*)runtime·sigtramp;
 	sa.sa_handler = fn;
-	if(runtime·rt_sigaction(i, &sa, nil, sizeof(sa.sa_mask)) != 0)
+	if((eno=runtime·rt_sigaction(i, &sa, nil, sizeof(sa.sa_mask))) != 0) {
+		runtime·printf("rt_sigaction: sig: %d, err: %d\n", i, eno);
 		runtime·throw("rt_sigaction failure");
+	}
 }
 
 GoSighandler*
 runtime·getsig(int32 i)
 {
 	SigactionT sa;
+	int32 eno;
 
 	runtime·memclr((byte*)&sa, sizeof sa);
-	if(runtime·rt_sigaction(i, nil, &sa, sizeof(sa.sa_mask)) != 0)
+	if((eno = runtime·rt_sigaction(i, nil, &sa, sizeof(sa.sa_mask))) != 0) {
+		runtime·printf("rt_sigaction: %d\n", eno);
 		runtime·throw("rt_sigaction read failure");
+	}
 	if((void*)sa.sa_handler == runtime·sigtramp)
 		return runtime·sighandler;
 	return (void*)sa.sa_handler;

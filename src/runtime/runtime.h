@@ -307,6 +307,7 @@ struct	G
 	bool	throwsplit; // must not split stack
 	int8	raceignore;	// ignore race detection events
 	M*	m;		// for debuggers, but offset not hard-coded
+				// the offset is known in liblink/objv.c
 	M*	lockedm;
 	int32	sig;
 	Slice	writebuf;
@@ -358,6 +359,7 @@ struct	M
 	uint32	freglo[16];	// D[i] lsb and F[i]
 	uint32	freghi[16];	// D[i] msb and F[i+16]
 	uint32	fflag;		// floating point compare flags
+				// on mips32, it's FCR(31), the offset is known in objv.c
 	uint32	locked;		// tracking for LockOSThread
 	M*	nextwaitm;	// next M waiting for lock
 	uintptr	waitsema;	// semaphore for parking on locks

@@ -1,4 +1,4 @@
-// +build linux,386 linux,arm
+// +build linux,386 linux,arm linux,mips32le linux,mips32
 
 // Copyright 2014 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style

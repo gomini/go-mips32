@@ -367,11 +367,11 @@ int errors[] = {
 	echo -E "
 };
 
-int signals[] = {
+struct {int i; char* s;}signals[] = {
 "
 	for i in $signals
 	do
-		echo -E '	'$i,
+		echo -E '	'\{$i,\"$i\"\},
 	done
 
 	# Use -E because on some systems bash builtin interprets \n itself.
@@ -409,10 +409,10 @@ main(void)
 	printf("var signals = [...]string {\n");
 	qsort(signals, nelem(signals), sizeof signals[0], intcmp);
 	for(i=0; i<nelem(signals); i++) {
-		e = signals[i];
-		if(i > 0 && signals[i-1] == e)
+		e = signals[i].i;
+		if(i > 0 && signals[i-1].i == e)
 			continue;
-		strcpy(buf, strsignal(e));
+		strcpy(buf, signals[i].s);
 		// lowercase first letter: Bad -> bad, but STREAM -> STREAM.
 		if(A <= buf[0] && buf[0] <= Z && a <= buf[1] && buf[1] <= z)
 			buf[0] += a - A;
@@ -430,4 +430,5 @@ main(void)
 '
 ) >_errors.c
 
-$CC $ccflags -o _errors _errors.c && $GORUN ./_errors && rm -f _errors.c _errors _const.go _error.grep _signal.grep _error.out
+#$CC $ccflags -o _errors _errors.c && $GORUN ./_errors && rm -f _errors.c _errors _const.go _error.grep _signal.grep _error.out
+gcc $ccflags -o _errors _errors.c && $GORUN ./_errors && rm -f _errors.c _errors _const.go _error.grep _signal.grep _error.out

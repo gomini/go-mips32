@@ -1,0 +1,135 @@
+
+// +build linux
+// +build mips32 mips32le
+
+#include "zasm_GOOS_GOARCH.h"
+#include "textflag.h"
+
+#ifdef GOARCH_mips32
+#define _lo	4
+#define _hi	0
+#else
+#define	_lo	0
+#define _hi	4
+#endif
+
+TEXT runtime·_mul64by32(SB),NOSPLIT, $0-20
+	MOVW	r+0(FP), R2
+	MOVW	a+(_lo+4)(FP), R3
+	MOVW	a+(_hi+4)(FP), R4
+	MOVW	b+12(FP), R5
+	MULU	R3, R5
+	MOVW	LO, R3
+	MOVW	HI, R6
+	MULU	R4, R5
+	MOVW	HI, R8
+	MOVW	LO, R4
+	ADDU	R6, R4
+	SGTU	R6, R4, R9
+	ADDU	R9, R8
+	MOVW	_lo(R2), R3
+	MOVW	_hi(R2), R4
+	MOVW	R8, ret+16(FP)
+	RET
+
+TEXT runtime·_div64by32(SB),NOSPLIT,$0-20
+	MOVW	R0, 0(R0)
+
+TEXT _sfloat(SB),NOSPLIT,$-4-0
+	NOSCHED
+	ADDU	$-144, R29
+	MOVW	R25, 104(R29)
+	MOVW	R31, 4(R29)
+	MOVW	R1, 8(R29)
+	MOVW	R2, 12(R29)
+	MOVW	HI, R1
+	MOVW	R3, 16(R29)
+	MOVW	R4, 20(R29)
+	MOVW	R5, 24(R29)
+	MOVW	R6, 28(R29)
+	MOVW	LO, R2
+	MOVW	R7, 32(R29)
+	MOVW	R8, 36(R29)
+	MOVW	R9, 40(R29)
+	MOVW	R10, 44(R29)
+	MOVW	R11, 48(R29)
+	MOVW	R12, 52(R29)
+	MOVW	R13, 56(R29)
+	MOVW	R14, 60(R29)
+	MOVW	R15, 64(R29)
+	MOVW	R16, 68(R29)
+	MOVW	R17, 72(R29)
+	MOVW	R18, 76(R29)
+	MOVW	R19, 80(R29)
+	MOVW	R20, 84(R29)
+	MOVW	R21, 88(R29)
+	MOVW	R22, 92(R29)
+	ADDU	$144, R29, R3
+	MOVW	R23, 96(R29)
+	MOVW	R24, 100(R29)
+
+	MOVW	R3, 120(R29)
+	MOVW	R30, 124(R29)
+	MOVW	R1, 128(R29)
+	MOVW	R2, 132(R29)
+	MOVW	R0, 136(R29)
+	SCHED
+
+	MOVW	g_m(g), R2
+	MOVW	$1, R1
+	MOVW	m_locks(R2), R3
+	ADDU	R1, R3
+	MOVW	R3, m_locks(R2)
+	MOVW	R1, m_softfloat(R2)
+
+	JAL	runtime·_sfloat2(SB)
+
+	MOVW	g_m(g), R2
+	MOVW	m_locks(R2), R3
+	ADDU	$-1, R3
+	MOVW	R3, m_locks(R2)
+	MOVW	R0, m_softfloat(R2)
+
+	NOSCHED
+	MOVW	132(R29), R2
+	MOVW	128(R29), R1
+	MOVW	124(R29), R30
+	MOVW	104(R29), R25
+	MOVW	100(R29), R24
+	MOVW	96(R29), R23
+	MOVW	92(R29), R22
+	MOVW	88(R29), R21
+	MOVW	84(R29), R20
+	MOVW	80(R29), R19
+	MOVW	76(R29), R18
+	MOVW	72(R29), R17
+	MOVW	68(R29), R16
+	MOVW	64(R29), R15
+	MOVW	60(R29), R14
+	MOVW	56(R29), R13
+	MOVW	52(R29), R12
+	MOVW	48(R29), R11
+	MOVW	44(R29), R10
+	MOVW	R2, LO
+	MOVW	40(R29), R9
+	MOVW	36(R29), R8
+	MOVW	32(R29), R7
+	MOVW	28(R29), R6
+	MOVW	R1, HI
+	MOVW	24(R29), R5
+	MOVW	20(R29), R4
+	MOVW	16(R29), R3
+	MOVW	12(R29), R2
+	MOVW	8(R29), R1
+	SCHED
+
+	MOVW	140(R29), R31
+	ADDU	$144, R29
+	JMP	(R31)
+
+TEXT _sfloatpanic(SB),NOSPLIT,$-4
+	ADDU	$-4, R29
+	MOVW	R0, 0(R29)
+	MOVW	g_sigpc(g), R31
+	JMP	runtime·sigpanic(SB)
+

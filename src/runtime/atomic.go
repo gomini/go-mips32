@@ -3,6 +3,8 @@
 // license that can be found in the LICENSE file.
 
 // +build !arm
+// +build !mips32
+// +build !mips32le
 
 package runtime
 

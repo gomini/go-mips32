@@ -233,16 +233,37 @@ func disasm_arm(code []byte, pc uint64, lookup lookupFunc) (string, int) {
 	return text, size
 }
 
+// hack
+func disasm_mips32(code []byte, pc uint64, lookup lookupFunc) (string, int) {
+	inst := binary.BigEndian.Uint32(code)
+	text := fmt.Sprintf("[%02d,%02d,%02d,%02d,%02d,%02d]",
+		inst>>26, (inst>>21)&(1<<5-1), (inst>>16)&(1<<5-1),
+		(inst>>11)&(1<<5-1), (inst>>6)&(1<<5-1), inst&(1<<6-1))
+	return text, 4
+}
+
+func disasm_mips32le(code []byte, pc uint64, lookup lookupFunc) (string, int) {
+	inst := binary.LittleEndian.Uint32(code)
+	text := fmt.Sprintf("[%02d,%02d,%02d,%02d,%02d,%02d]",
+		inst>>26, (inst>>21)&(1<<5-1), (inst>>16)&(1<<5-1),
+		(inst>>11)&(1<<5-1), (inst>>6)&(1<<5-1), inst&(1<<6-1))
+	return text, 4
+}
+
 var disasms = map[string]disasmFunc{
-	"386":   disasm_386,
-	"amd64": disasm_amd64,
-	"arm":   disasm_arm,
+	"386":     disasm_386,
+	"amd64":   disasm_amd64,
+	"arm":     disasm_arm,
+	"mips32":  disasm_mips32,
+	"mips32le":disasm_mips32le,
 }
 
 var byteOrders = map[string]binary.ByteOrder{
 	"386":       binary.LittleEndian,
 	"amd64":     binary.LittleEndian,
 	"arm":       binary.LittleEndian,
+	"mips32":    binary.BigEndian,
+	"mips32le":  binary.LittleEndian,
 	"power64":   binary.BigEndian,
 	"power64le": binary.LittleEndian,
 }

@@ -2109,7 +2109,7 @@ func TestTransportClosesBodyOnError(t *testing.T) {
 		if err == nil {
 			t.Errorf("Unexpected success reading request body from handler; want 'unexpected EOF reading trailer'")
 		}
-	case <-time.After(5 * time.Second):
+	case <-time.After(50 * time.Second):
 		t.Error("timeout waiting for server handler to complete")
 	}
 	select {

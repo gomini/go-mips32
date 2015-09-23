@@ -952,7 +952,7 @@ walkexpr(Node **np, NodeList **init)
 
 	case OCONV:
 	case OCONVNOP:
-		if(thechar == '5') {
+		if(thechar == '5' || thechar == 'v') {
 			if(isfloat[n->left->type->etype]) {
 				if(n->type->etype == TINT64) {
 					n = mkcall("float64toint64", n->type, init, conv(n->left, types[TFLOAT64]));

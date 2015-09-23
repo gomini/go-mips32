@@ -23,7 +23,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-// +build arm 386
+// +build arm 386 mips32 mips32le
 
 package runtime
 
@@ -192,7 +192,7 @@ func _mul64by32(lo64 *uint64, a uint64, b uint32) (hi32 uint32)
 func _div64by32(a uint64, b uint32, r *uint32) (q uint32)
 
 func dodiv(n, d uint64) (q, r uint64) {
-	if GOARCH == "arm" {
+	if GOARCH == "arm" || GOARCH == "mips32" || GOARCH == "mips32le" {
 		// arm doesn't have a division instruction, so
 		// slowdodiv is the best that we can do.
 		// TODO: revisit for arm64.

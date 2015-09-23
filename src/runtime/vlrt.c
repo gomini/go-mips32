@@ -23,7 +23,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-// +build arm 386
+// +build arm 386 mips32 mips32le
 
 #include "textflag.h"
 
@@ -44,12 +44,23 @@ typedef	signed char	schar;
 
 #define	SIGN(n)	(1UL<<(n-1))
 
+#ifdef GOARCH_mips32
+// big endian
+typedef	struct	Vlong	Vlong;
+struct	Vlong
+{
+	ulong	hi;
+	ulong	lo;
+};
+#else
+// little endian
 typedef	struct	Vlong	Vlong;
 struct	Vlong
 {
 	ulong	lo;
 	ulong	hi;
 };
+#endif
 
 typedef	union	Vlong64	Vlong64;
 union	Vlong64
@@ -251,6 +262,54 @@ static void
 dodiv(Vlong num, Vlong den, Vlong *qp, Vlong *rp)
 {
 	slowdodiv(num, den, qp, rp);
+}
+#endif
+
+#ifdef GOARCH_mips32
+#define MIPSx
+#endif
+#ifdef GOARCH_mips32le
+#define MIPSx
+#endif
+
+#ifdef MIPSx
+static void
+dodiv(Vlong num, Vlong den, Vlong *qp, Vlong *rp)
+{
+	ulong n;
+	Vlong x, q, r;
+
+	if(den.hi > num.hi || (den.hi == num.hi && den.lo > num.lo)){
+		if(qp) {
+			qp->hi = 0;
+			qp->lo = 0;
+		}
+		if(rp) {
+			rp->hi = num.hi;
+			rp->lo = num.lo;
+		}
+		return;
+	}
+
+	if(den.hi != 0){
+		q.hi = 0;
+		n = num.hi/den.hi;
+		if(runtime·_mul64by32(&x, den, n) || x.hi > num.hi || (x.hi == num.hi && x.lo > num.lo))
+			slowdodiv(num, den, &q, &r);
+		else {
+			q.lo = n;
+			*(long long*)&r = *(long long*)&num - *(long long*)&x;
+		}
+	} else
+		slowdodiv(num, den, &q, &r);
+	if(qp) {
+		qp->lo = q.lo;
+		qp->hi = q.hi;
+	}
+	if(rp) {
+		rp->lo = r.lo;
+		rp->hi = r.hi;
+	}
 }
 #endif
 

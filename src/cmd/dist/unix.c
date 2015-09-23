@@ -655,7 +655,7 @@ int
 main(int argc, char **argv)
 {
 	Buf b;
-	int osx;
+	int osx, x;
 	struct utsname u;
 
 	setvbuf(stdout, nil, _IOLBF, 0);
@@ -708,7 +708,15 @@ main(int argc, char **argv)
 			gohostarch = "386";
 		else if(contains(u.machine, "arm"))
 			gohostarch = "arm";
-		else
+		else if(contains(u.machine, "mips")) {
+			if(sizeof(int) != 4)
+				fatal("mips64 is not supported yet");
+			x = 1;
+			if(((unsigned char*)&x)[0] == 0)
+				gohostarch = "mips32";
+			else
+				gohostarch = "mips32le";
+		} else
 			fatal("unknown architecture: %s", u.machine);
 	}
 

@@ -36,7 +36,7 @@ addrspace_free(void *v, uintptr n)
 		errval = runtime·mincore((int8*)v + off, chunk, vec);
 		// ENOMEM means unmapped, which is what we want.
 		// Anything else we assume means the pages are mapped.
-		if (errval != -ENOMEM)
+		if (errval != -ENOMEM && errval != ENOMEM)
 			return 0;
 	}
 	return 1;
@@ -48,12 +48,15 @@ mmap_fixed(byte *v, uintptr n, int32 prot, int32 flags, int32 fd, uint32 offset)
 	void *p;
 
 	p = runtime·mmap(v, n, prot, flags, fd, offset);
-	if(p != v && addrspace_free(v, n)) {
+	if(p != v) {
+		if(p > (void*)4096) {
+			runtime·munmap(p, n);
+			p = nil;
+		}
 		// On some systems, mmap ignores v without
 		// MAP_FIXED, so retry if the address space is free.
-		if(p > (void*)4096)
-			runtime·munmap(p, n);
-		p = runtime·mmap(v, n, prot, flags|MAP_FIXED, fd, offset);
+		if(addrspace_free(v, n))
+			p = runtime·mmap(v, n, prot, flags|MAP_FIXED, fd, offset);
 	}
 	return p;
 }
@@ -119,8 +122,9 @@ runtime·SysReserve(void *v, uintptr n, bool *reserved)
 	if(sizeof(void*) == 8 && n > 1LL<<32) {
 		p = mmap_fixed(v, 64<<10, PROT_NONE, MAP_ANON|MAP_PRIVATE, -1, 0);
 		if (p != v) {
-			if(p >= (void*)4096)
+			if(p >= (void*)4096) {
 				runtime·munmap(p, 64<<10);
+			}
 			return nil;
 		}
 		runtime·munmap(p, 64<<10);
@@ -129,8 +133,9 @@ runtime·SysReserve(void *v, uintptr n, bool *reserved)
 	}
 
 	p = runtime·mmap(v, n, PROT_NONE, MAP_ANON|MAP_PRIVATE, -1, 0);
-	if((uintptr)p < 4096)
+	if((uintptr)p < 4096) {
 		return nil;
+	}
 	*reserved = true;
 	return p;
 }

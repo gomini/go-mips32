@@ -30,6 +30,7 @@ my $netbsd = 0;
 my $dragonfly = 0;
 my $nacl = 0;
 my $arm = 0; # 64-bit value should use (even, odd)-pair
+my $mips32 = 0;
 
 if($ARGV[0] eq "-b32") {
 	$_32bit = "big-endian";
@@ -60,6 +61,10 @@ if($ARGV[0] eq "-nacl") {
 }
 if($ARGV[0] eq "-arm") {
 	$arm = 1;
+	shift;
+}
+if($ARGV[0] eq "-mips32") {
+	$mips32 = 1;
 	shift;
 }
 
@@ -184,7 +189,7 @@ while(<>) {
 				push @args, "uintptr($name)";
 			}
 		} elsif($type eq "int64" && $_32bit ne "") {
-			if(@args % 2 && $arm) {
+			if(@args % 2 && ($arm || $mips32)) {
 				# arm abi specifies 64-bit argument uses 
 				# (even, odd) pair
 				push @args, "0"

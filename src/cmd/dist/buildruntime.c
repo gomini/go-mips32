@@ -148,6 +148,15 @@ static struct {
 	{"arm", "",
 	"#define	LR	R14\n"
 	},
+
+	{"mips32", "",
+	"#define	LR	R31\n"
+	"#define	g	R30\n"
+	},
+	{"mips32le", "",
+	"#define	LR	R31\n"
+	"#define	g	R30\n"
+	},
 };
 
 #define MAXWINCB 2000 /* maximum number of windows callbacks allowed */
@@ -393,6 +402,8 @@ mkzruntimedefs(char *dir, char *file)
 	vadd(&argv, "-I");
 	vadd(&argv, bprintf(&b, "%s/pkg/%s_%s", goroot, goos, goarch));
 	vadd(&argv, "-q");
+//	vadd(&argv, "-v");
+//	vadd(&argv, "-g");
 	vadd(&argv, "-n");
 	vadd(&argv, "-o");
 	vadd(&argv, bpathf(&b, "%s/runtimedefs", workdir));

@@ -49,9 +49,11 @@ func Open(name string) (*File, error) {
 	if err != nil {
 		return nil, err
 	}
-	for _, try := range openers {
+	for i, try := range openers {
 		if raw, err := try(r); err == nil {
 			return &File{r, raw}, nil
+		} else if i == 0 {
+			fmt.Println(err)
 		}
 	}
 	r.Close()
