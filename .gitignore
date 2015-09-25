@@ -39,6 +39,11 @@ src/go/doc/headscan
 src/runtime/mkversion
 src/runtime/zaexperiment.h
 src/runtime/zversion.go
+src/runtime/zasm_linux_amd64.h
+src/runtime/zgoarch_amd64.go
+src/runtime/zgoos_linux.go
+src/runtime/zruntime_defs_linux_amd64.go
+src/runtime/zsys_linux_amd64.s
 src/unicode/maketables
 src/*.*/
 test/pass.out
