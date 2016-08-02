@@ -310,10 +310,12 @@ extern	void	flagprint(int);
 #ifdef _WIN32
 
 #if !defined(_WIN64) && !defined(__MINGW64_VERSION_MAJOR)
+#if !defined(__struct_timespec_defined)
 struct timespec {
 	int tv_sec;
 	long tv_nsec;
 };
+#endif
 #define execv(prog, argv) execv(prog, (const char* const*)(argv))
 #define execvp(prog, argv) execvp(prog, (const char**)(argv))
 #endif
