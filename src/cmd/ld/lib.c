@@ -599,6 +599,8 @@ hostlink(void)
 	case '5':
 		argv[argc++] = "-marm";
 		break;
+	default:
+		break;
 	}
 	if(!debug['s'] && !debug_s) {
 		argv[argc++] = "-gdwarf-2"; 
