@@ -49,6 +49,19 @@ func accept(s int) (int, syscall.Sockaddr, error) {
 	// kernel and on FreeBSD it was introduced in 10 kernel. If we
 	// get an ENOSYS error on both Linux and FreeBSD, or EINVAL
 	// error on Linux, fall back to using accept.
+
+	// Hotfix: mips32le can return a negative errno. This breaks logic which expects
+	//				 only positive errnos as per the POSIX spec.
+	//         NOTE: There may be an underlying bug in the MIPS ASM implementation
+	if err != nil {
+		serr := uint32(err.(syscall.Errno))
+		if serr > ^uint32(0)/2 {
+			// overflowed
+			serr = ^uint32(0) - serr + 1
+			err = syscall.Errno(serr)
+		}
+	}
+
 	switch err {
 	default: // nil and errors other than the ones listed
 		return ns, sa, err
