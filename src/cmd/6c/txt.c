@@ -30,6 +30,8 @@
 
 #include "gc.h"
 
+#include <limits.h>
+
 int thechar = '6';
 char *thestring = "amd64";
 
@@ -992,7 +994,7 @@ gmove(Node *f, Node *t)
 			f->vconst &= 0xffff;
 			if(f->vconst & 0x8000){
 				f->vconst |= 0xffff0000;
-				f->vconst |= (vlong)~0 << 32;
+				f->vconst |= (vlong)INT_MAX << 32;
 			}
 			a = AMOVL;
 		}
@@ -1042,7 +1044,7 @@ gmove(Node *f, Node *t)
 			f->vconst &= 0xff;
 			if(f->vconst & 0x80){
 				f->vconst |= 0xffffff00;
-				f->vconst |= (vlong)~0 << 32;
+				f->vconst |= (vlong)INT_MAX << 32;
 			}
 			a = AMOVQ;
 		}

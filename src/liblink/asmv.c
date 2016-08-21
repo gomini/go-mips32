@@ -298,7 +298,7 @@ spanv(Link *ctxt, LSym *cursym)
 	Prog *p, *q;
 	Optab *o;
 	int m, bflag, i, j;
-	int32 out[4], c, otxt;
+	int32 out[8], c, otxt;
 	uchar *bp, *cast;
 
 	p = cursym->text;
@@ -932,7 +932,7 @@ asmout(Link *ctxt, Prog *p, Optab *o, int32 *out)
 	int r, a;
 	Reloc *rel;
 
-	o1 = o2 = o3 = o4 = 0;
+	o1 = o2 = o3 = o4 = o5 = 0;
 	switch(o->type) {
 	default:
 		ctxt->diag("unknown type %d", o->type);
