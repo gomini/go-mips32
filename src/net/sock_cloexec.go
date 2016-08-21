@@ -49,17 +49,6 @@ func accept(s int) (int, syscall.Sockaddr, error) {
 	// kernel and on FreeBSD it was introduced in 10 kernel. If we
 	// get an ENOSYS error on both Linux and FreeBSD, or EINVAL
 	// error on Linux, fall back to using accept.
-
-	// Hotfix: negative errnos can be returned which breaks logic which expects
-	//				 only positive errnos as per the POSIX spec. *=-1 for any negative
-	//         values and recreate Error
-	if err != nil {
-		serrno := int32(err.(syscall.Errno))
-		if serrno < 0 {
-			err = syscall.Errno(uint32(serrno * -1))
-		}
-	}
-
 	switch err {
 	default: // nil and errors other than the ones listed
 		return ns, sa, err

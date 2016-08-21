@@ -28,7 +28,15 @@ TEXT ·Syscall(SB),NOSPLIT,$0-28
 	MOVW	R16, R29
 
 	BEQ	R7, R0, ok
-	MOVW	R2, 24(FP)
+
+	MOVW	$0, R1		// R1 = 0
+	SGT	R2, R1, R23 // R2 < R1 => R23 (errno < 0)
+	BNE	R23, perrno // jump if R23 not true (errno > 0)
+	MOVW	$-1, R1		// R1 = -1 (abs)
+	MUL   R2, R1		// R2 * R1 (abs)
+	MOVW  LO, R2		// R2 = LO (abs)
+perrno:
+	MOVW	R2, 24(FP)	// errno
 	MOVW	$-1, R1
 	MOVW	R1, 16(FP)
 	MOVW	R0, 20(FP)
@@ -37,7 +45,7 @@ TEXT ·Syscall(SB),NOSPLIT,$0-28
 ok:
 	MOVW	R2, 16(FP)
 	MOVW	R3, 20(FP)
-	MOVW	R0, 24(FP)
+	MOVW	R0, 24(FP)	// errno
 	JAL	runtime·exitsyscall(SB)
 	RET
 
@@ -68,7 +76,15 @@ TEXT	·Syscall6(SB),NOSPLIT,$0-40
 
 	MOVW	R16, R29
 	BEQ	R7, R0, ok
-	MOVW	R2, 36(FP)
+
+	MOVW	$0, R1		// R1 = 0
+	SGT	R2, R1, R23 // R2 < R1 => R23 (errno < 0)
+	BNE	R23, perrno // jump if R23 not true (errno > 0)
+	MOVW	$-1, R1		// R1 = -1 (abs)
+	MUL   R2, R1		// R2 * R1 (abs)
+	MOVW  LO, R2		// R2 = LO (abs)
+perrno:	
+	MOVW	R2, 36(FP)	// errno
 	MOVW	$-1, R1
 	MOVW	R1, 28(FP)
 	MOVW	R0, 32(FP)
@@ -77,7 +93,7 @@ TEXT	·Syscall6(SB),NOSPLIT,$0-40
 ok:
 	MOVW	R2, 28(FP)
 	MOVW	R3, 32(FP)
-	MOVW	R0, 36(FP)
+	MOVW	R0, 36(FP)	// errno
 	JAL	runtime·exitsyscall(SB)
 	RET
 
@@ -107,7 +123,15 @@ TEXT	·RawSyscall6(SB),NOSPLIT,$0-40
 
 	MOVW	R16, R29
 	BEQ	R7, R0, ok
-	MOVW	R2, 36(FP)
+
+	MOVW	$0, R1		// R1 = 0
+	SGT	R2, R1, R23 // R2 < R1 => R23 (errno < 0)
+	BNE	R23, perrno // jump if R23 not true (errno > 0)
+	MOVW	$-1, R1		// R1 = -1 (abs)
+	MUL   R2, R1		// R2 * R1 (abs)
+	MOVW  LO, R2		// R2 = LO (abs)
+perrno:	
+	MOVW	R2, 36(FP)	// errno
 	MOVW	$-1, R1
 	MOVW	R1, 28(FP)
 	MOVW	R0, 32(FP)
@@ -115,7 +139,7 @@ TEXT	·RawSyscall6(SB),NOSPLIT,$0-40
 ok:
 	MOVW	R2, 28(FP)
 	MOVW	R3, 32(FP)
-	MOVW	R0, 36(FP)
+	MOVW	R0, 36(FP)	// errno
 	RET
 
 TEXT ·RawSyscall(SB),NOSPLIT,$0-28
@@ -140,7 +164,15 @@ TEXT ·RawSyscall(SB),NOSPLIT,$0-28
 
 	MOVW	R16, R29
 	BEQ	R7, R0, ok
-	MOVW	R2, 24(FP)
+
+	MOVW	$0, R1		// R1 = 0
+	SGT	R2, R1, R23 // R2 < R1 => R23 (errno < 0)
+	BNE	R23, perrno // jump if R23 not true (errno > 0)
+	MOVW	$-1, R1		// R1 = -1 (abs)
+	MUL   R2, R1		// R2 * R1 (abs)
+	MOVW  LO, R2		// R2 = LO (abs)
+perrno:
+	MOVW	R2, 24(FP)	// errno
 	MOVW	$-1, R1
 	MOVW	R1, 16(FP)
 	MOVW	R0, 20(FP)
@@ -148,7 +180,7 @@ TEXT ·RawSyscall(SB),NOSPLIT,$0-28
 ok:
 	MOVW	R2, 16(FP)
 	MOVW	R3, 20(FP)
-	MOVW	R0, 24(FP)
+	MOVW	R0, 24(FP)	// errno
 	RET
 
 #define SYS__LLSEEK	4140
@@ -182,10 +214,10 @@ TEXT ·seek(SB),NOSPLIT,$0-28
 	BEQ	R7, R0, ok
 	MOVW	R0, 16(FP)
 	MOVW	R0, 20(FP)
-	MOVW	R2, 24(FP)
+	MOVW	R2, 24(FP)	// errno
 	JAL	runtime·exitsyscall(SB)
 	RET
 ok:
-	MOVW	R0, 24(FP)
+	MOVW	R0, 24(FP)	// errno
 	JAL	runtime·exitsyscall(SB)
 	RET
