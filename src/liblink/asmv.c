@@ -298,7 +298,7 @@ spanv(Link *ctxt, LSym *cursym)
 	Prog *p, *q;
 	Optab *o;
 	int m, bflag, i, j;
-	int32 out[4], c, otxt;
+	int32 out[5], c, otxt;
 	uchar *bp, *cast;
 
 	p = cursym->text;
